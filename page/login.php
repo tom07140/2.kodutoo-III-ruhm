@@ -1,5 +1,10 @@
 <?php
 	
+	//AB ühendus
+	require_once("../../config.php");
+	$database = "if15_toomloo_3";
+	$mysqli = new mysqli($servername, $username, $password, $database);
+	
 	//echo $_POST["email"];
 	$email_error = "";
 	$password_error = "";
@@ -9,7 +14,8 @@
 	$cpassword_error = "";
 	
 	// muutujad ab väärtuste jaoks
-	$cname = "";
+	$cname = ""; $cemail = ""; $cpassword = "";
+	$name = ""; $email = ""; $password = "";
 	
 	
 	//kontrollime, et keegi vajutas input nuppu
@@ -24,6 +30,9 @@
 			if ( empty($_POST["email"])){
 				$email_error = "See väli on kohustuslik";
 					
+			} else {
+				
+				$email = test_input($_POST["email"]);
 			}
 			
 			//kontrollin, et password ei ole tühi
@@ -34,15 +43,33 @@
 			} else {
 				
 				//kui oleme siia jõudnud, siis parool ei ole tühi
-				//kontrollin, et oleks vähemalt 8 sümbolit pikk
-				if(strlen($_POST["password"]) < 8) {
+				
+				$password = test_input($_POST["password"]);
+			}
+			
+			//vaatame errorid üle
+			if($email_error == "" && $password_error ==""){
+				echo "Võib sisse logida! Kasutajanimi on ".$email." ja parool on ".$password;
+				$hash = hash("sha512", $password);
+				
+				$stmt = $mysqli->prepare("SELECT id, email, nimi FROM 2login WHERE email=?, username=?, AND password=?");
+				$stmt->bind_param("sss",$email,$username,$password,$hash);
+				
+				$stmt->bind_result($id_from_db, $username_from_db, $email_from_db);
+				$stmt->execute();
+				
+				if($stmt->fetch()){
+					echo "Email ja parool õiged, kasutaja id="$id_from_db;
 					
-					$password_error = "Peab olema vähemalt 8 tähemärki pikk";
+				}else{
 					
+					echo "Wrong credentials!";
 				}
+				$stmt->close();
 				
 			}
-		} else {
+			
+		} else if(isset($_POST["create"])){
 			if ( empty($_POST["cname"])){
 				$cname_error = "See väli on kohustuslik";
 			} else {
@@ -53,6 +80,8 @@
 			if ( empty($_POST["cemail"])){
 				$cemail_error = "See väli on kohustuslik";
 					
+			} else {
+				$cemail_error = test_input($_POST["cemail"]);
 			}
 			
 			if ( empty($_POST["cpassword"])){
@@ -66,14 +95,22 @@
 					
 					$cpassword_error = "Peab olema vähemalt 8 tähemärki pikk";
 					
+				} else {
+					$cpassword = test_input($_POST["cpassword"]);
 				}
 				
-			}
-			
-			if($cname_error == ""){
-				echo "salvestan ab'i " .$cname;
 				
 			}
+			if ($cemail_error == "" && $cpassword_error == ""){
+				
+				$hash = hash("sha512", $cpassword);
+				
+				$stmt = $mysqli->("INSERT INTO 2login (nimi, email, password) VALUES (?,?,?)");
+				$stmt->bind_param("sss", $cname, $cemail, $chash);
+				$stmt->execute();
+				$stmt->close();
+			}
+			
 		}
 	}
 	
@@ -84,6 +121,7 @@
 	  return $data;
 	}
 	
+	$mysqli->close();
 ?>
 <?php
 	$page_title = "Sisselogimise leht";
