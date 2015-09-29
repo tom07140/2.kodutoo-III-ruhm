@@ -59,7 +59,7 @@
 				$stmt->execute();
 				
 				if($stmt->fetch()){
-					echo "Email ja parool õiged, kasutaja id="$id_from_db;
+					echo "Email ja parool õiged, kasutaja id=".$id_from_db;
 					
 				}else{
 					
@@ -105,7 +105,7 @@
 				
 				$hash = hash("sha512", $cpassword);
 				
-				$stmt = $mysqli->("INSERT INTO 2login (nimi, email, password) VALUES (?,?,?)");
+				$stmt = $mysqli->prepare("INSERT INTO 2login (nimi, email, password) VALUES (?,?,?)");
 				$stmt->bind_param("sss", $cname, $cemail, $chash);
 				$stmt->execute();
 				$stmt->close();
