@@ -8,14 +8,16 @@
 	//echo $_POST["email"];
 	$email_error = "";
 	$password_error = "";
-	$name_error = "";
 	$cname_error = "";
 	$cemail_error = "";
 	$cpassword_error = "";
 	
 	// muutujad ab väärtuste jaoks
-	$cname = ""; $cemail = ""; $cpassword = "";
-	$name = ""; $email = ""; $password = "";
+	$cname = ""; 
+	$cemail = ""; 
+	$cpassword = "";
+	$email = ""; 
+	$password = "";
 	
 	
 	//kontrollime, et keegi vajutas input nuppu
@@ -52,10 +54,10 @@
 				echo "Võib sisse logida! Kasutajanimi on ".$email." ja parool on ".$password;
 				$hash = hash("sha512", $password);
 				
-				$stmt = $mysqli->prepare("SELECT id, email, nimi FROM 2login WHERE email=?, username=?, AND password=?");
-				$stmt->bind_param("sss",$email,$username,$password,$hash);
+				$stmt = $mysqli->prepare("SELECT email, password FROM 2login WHERE email=? AND password=?");
+				$stmt->bind_param("ss",$email, $hash);
 				
-				$stmt->bind_result($id_from_db, $username_from_db, $email_from_db);
+				$stmt->bind_result($id_from_db, $email_from_db);
 				$stmt->execute();
 				
 				if($stmt->fetch()){
@@ -69,7 +71,9 @@
 				
 			}
 			
-		} else if(isset($_POST["create"])){
+		} 
+		if(isset($_POST["create"])){
+			
 			if ( empty($_POST["cname"])){
 				$cname_error = "See väli on kohustuslik";
 			} else {
@@ -81,7 +85,7 @@
 				$cemail_error = "See väli on kohustuslik";
 					
 			} else {
-				$cemail_error = test_input($_POST["cemail"]);
+				$cemail = test_input($_POST["cemail"]);
 			}
 			
 			if ( empty($_POST["cpassword"])){
@@ -98,17 +102,18 @@
 				} else {
 					$cpassword = test_input($_POST["cpassword"]);
 				}
-				
+				echo "Tere";
 				
 			}
 			if ($cemail_error == "" && $cpassword_error == ""){
 				
 				$hash = hash("sha512", $cpassword);
-				
-				$stmt = $mysqli->prepare("INSERT INTO 2login (nimi, email, password) VALUES (?,?,?)");
-				$stmt->bind_param("sss", $cname, $cemail, $chash);
+				echo "Tere2";
+				$stmt = $mysqli->prepare("INSERT INTO 2login (name, email, password) VALUES (?,?,?)");
+				$stmt->bind_param("sss", $cname, $cemail, $hash);
 				$stmt->execute();
 				$stmt->close();
+				
 			}
 			
 		}
@@ -143,7 +148,7 @@
 			<input name="cname" type="text" placeholder="Eesnimi Perekonnanimi" value="<?php echo $cname; ?>"> <?php echo $cname_error; ?> <br><br>
 			<input name="cemail" type="email" placeholder="E-post"> <?php echo $cemail_error; ?> <br><br>
 			<input name="cpassword" type="password" placeholder="parool"> <?php echo $cpassword_error; ?> <br><br> 
-			<input type="submit" value="Registreeru"> <br><br>
+			<input type="submit" name="create" value="Registreeru"> <br><br>
 		</form>
 	
 	<h2>MVP idee</h2>
